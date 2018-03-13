@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <script>
+    $( function() {
+      function log( message ) {
+        $( "<div>" ).text( message ).prependTo( "#log" );
+        $( "#log" ).scrollTop( 0 );
+      }
+
+      $( "#foodsSearch" ).autocomplete({
+        source: function( request, response ) {
+          $.ajax( {
+            url: "foods",
+            data: 'q=' + request.term,
+            dataType: 'json',
+            success: function( data ) {
+              response( data );
+            }
+          } );
+        },
+        minLength: 2,
+        select: function( event, ui ) {
+          log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+        }
+      } );
+    } );
+  </script>
+</head>
+<body>
+  <input id="foodsSearch">
+
+  <div class="ui-widget" style="margin-top:2em; font-family:Arial">
+    Result:
+    <div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div>
+  </div>
+
+
+
+  <form action="" method="post">
+    <input id="city" name="city" type="text" onkeyup="getResults(this.value)"/>
+    <input type="text" id="result" value=""/>
+    <select id="myselect" name="myselect" ><option selected="selected">blank</option></select>
+  </form>
+  </div>
+
+  <script>
+  function getResults(str) {
+    $.ajax({
+      url:'foods',
+      type:'GET',
+      data: 'q=' + str,
+      dataType: 'json',
+      success: function( json ) {
+          $.each(json, function(i, value) {
+              $('#myselect').append($('<option>').text(value).attr('value', value));
+          });
+      }
+  });
+  };
+
+  $( '.suggest' ).keyup( function() {
+     getResults( $( this ).val() );
+  } );
+  </script>
+</body>
+</html>
