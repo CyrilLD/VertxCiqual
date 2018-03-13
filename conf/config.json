@@ -1,0 +1,10 @@
+{
+  "mongo_db": {
+    "connection_string": "mongodb://localhost:27017",
+    "db_name": "ciqual"
+  },
+  "dataSource": {
+    "type": "csv",
+    "path": "assets/data/TableCiqual2017.csv"
+  }
+}

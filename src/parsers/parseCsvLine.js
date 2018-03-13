@@ -5,10 +5,10 @@
  * @module src/persers/parseCsvLine
  * @author Cyril LD
  */
-module.exports = function (line) {
-  var data = [];
-  var value = null;
-  var inString = false;
+module.exports = (line) => {
+  const data = [];
+  let value = null;
+  let inString = false;
 
   for (var i = 0; i < line.length() ; i++) {
     var char = line.charAt(i);
