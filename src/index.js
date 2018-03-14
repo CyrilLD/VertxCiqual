@@ -4,7 +4,10 @@ import Vertx from "vertx-js/vertx";
 import Buffer from "vertx-js/buffer";
 import RecordParser from "vertx-js/record_parser";
 import MongoClient from "vertx-mongo-js/mongo_client";
+
+
 import ParseCsv from "parsers/parseCsv.js";
+import Aggregators from "aggregators";
 
 
 /**
@@ -12,7 +15,6 @@ import ParseCsv from "parsers/parseCsv.js";
  */
 const config = Vertx.currentContext().config();
 let serviceReady = false;
-
 
 /**
  * MongoDb connexion
@@ -28,16 +30,8 @@ const mongoClient = MongoClient.createShared(vertx, mongoconfig);
  * HTTP Server
  */
 const router = Router.router(vertx);
-
+// Route static contents in /webroot folder
 router.route("/*").handler(StaticHandler.create().handle);
-
-// router.get("/").handler((context) => {
-//   // This handler will be called for "/" requests
-//   const response = context.response();
-//   response.putHeader("content-type", "text/plain");
-//   // Write to the response and end it
-//   response.end("route racine");
-// });
 
 router
   .get("/foods")
@@ -87,19 +81,25 @@ router
     }
     
     const alim_code = context.request().getParam("param0");
-    const primitive = context.request().getParam("param1");
+    const aggregate = context.request().getParam("param1");
+    
+    if (!Aggregators.hasOwnProperty(aggregate)) {
+      return context.response().setStatusCode(400).end(`Aggregator ${aggregate} does'nt exists.`);
+    }
+    
     const query = { alim_code: parseInt(alim_code) };
     console.log(query);
     
     // Performs a regex search on MongoDb
-    mongoClient.findOne("foods", query, (res, err) => {
+    mongoClient.find("foods", query, (res, err) => {
       if (err == null) {
-        console.log(res);
+        const result = Aggregators[aggregate](res[0]);
+        
         context
         .response()
         .putHeader("content-type", "application/json")
         .end(
-          JSON.stringify(res)
+          JSON.stringify(result)
         );
       } else {
         err.printStackTrace();
@@ -110,6 +110,8 @@ router
 // Creates and starts HTTP server
 const server = vertx.createHttpServer();
 server.requestHandler(router.accept).listen(8080);
+
+
 
 
 /**

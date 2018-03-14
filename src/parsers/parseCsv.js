@@ -35,6 +35,7 @@ const cleanHeader = datas => datas.map(prop =>
     .replace(/[\(\)\<\>\/\.°:,]/g, '')
     .replace(/[ ]/g, '_')
     .replace(/[éèêë]/g, 'e')
+    .toLowerCase()
 )
  
 
