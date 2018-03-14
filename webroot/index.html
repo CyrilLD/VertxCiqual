@@ -40,29 +40,8 @@
     <div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div>
   </div>
 
-
-
-  <form action="" method="post">
-    <input id="city" name="city" type="text" onkeyup="getResults(this.value)"/>
-    <input type="text" id="result" value=""/>
-    <select id="myselect" name="myselect" ><option selected="selected">blank</option></select>
-  </form>
-  </div>
-
   <script>
-  function getResults(str) {
-    $.ajax({
-      url:'foods',
-      type:'GET',
-      data: 'q=' + str,
-      dataType: 'json',
-      success: function( json ) {
-          $.each(json, function(i, value) {
-              $('#myselect').append($('<option>').text(value).attr('value', value));
-          });
-      }
-  });
-  };
+
 
   $( '.suggest' ).keyup( function() {
      getResults( $( this ).val() );

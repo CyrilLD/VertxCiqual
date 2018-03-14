@@ -11,6 +11,7 @@ import ParseCsv from "parsers/parseCsv.js";
  * Vert.x Config
  */
 const config = Vertx.currentContext().config();
+let serviceReady = false;
 
 
 /**
@@ -42,29 +43,68 @@ router
   .get("/foods")
   .produces("application/json")
   .handler(context => {
-    // This handler will be called for "/" requests
-    console.log(context.request().getParam("q"));
-    const response = context.response();
-    response.putHeader("content-type", "text/plain");
-
-    // Write to the response and end it
-    //response.end("foods");
-    response.end(
-      JSON.stringify([
-        {
-          id: 111,
-          label: "food1"
-        },
-        {
-          id: 222,
-          label: "food2"
-        },
-        {
-          id: 333,
-          label: "food3"
-        }
-      ])
-    );
+    if (serviceReady === false)
+    {
+      return context.response().setStatusCode(503).end('Service is not ready');
+    }
+    
+    const startWith = (context.request().getParam("startWith") === '1') ? '^' : '';
+    const search = context.request().getParam("q").trim();
+    const query = { 'alim_nom_fr': { 
+      $regex: `${startWith}${search}`,
+      $options: 'i'
+    }}
+    console.log('query', query);
+    
+    // Performs a regex search on MongoDb
+    mongoClient.find("foods", query, (res, err) => {
+      if (err == null) {
+        const foods = res.map(food => {
+          return {
+            id: food.alim_code,
+            label: food.alim_nom_fr
+          }
+        })
+        context
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(JSON.stringify(foods));
+        
+      } else {
+        return context.response().setStatusCode(500).end('An error occured when finding foods.')
+      }
+    });
+  });
+  
+router
+  .get()
+  .pathRegex("\\/food\\/([0-9]+)\\/([a-z_]+)")
+  .produces("application/json")
+  .handler(context => {
+    if (serviceReady === false)
+    {
+      return context.response().setStatusCode(503).end('Service is not ready');
+    }
+    
+    const alim_code = context.request().getParam("param0");
+    const primitive = context.request().getParam("param1");
+    const query = { alim_code: parseInt(alim_code) };
+    console.log(query);
+    
+    // Performs a regex search on MongoDb
+    mongoClient.findOne("foods", query, (res, err) => {
+      if (err == null) {
+        console.log(res);
+        context
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(
+          JSON.stringify(res)
+        );
+      } else {
+        err.printStackTrace();
+      }
+    });
   });
 
 // Creates and starts HTTP server
@@ -114,7 +154,7 @@ const loadDataSource = (dataSource) => {
               futureDb.complete(true);
             }, (resDb, errDb) => {
               console.log('MongoDb insert end', resDb);
-              console.log('End db err', errDb);
+              serviceReady = true;
             });
           })
 
@@ -141,4 +181,11 @@ const loadDataSource = (dataSource) => {
     });
 }
 
-loadDataSource(config.dataSource);
+// First empty the 'foods' collection, then import the new data source
+mongoClient.removeDocuments("foods", { }, function (res, err) {
+  if (err == null) {
+    loadDataSource(config.dataSource);
+  } else {
+    err.printStackTrace();
+  }
+});
