@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "rm -Rf dist && ./node_modules/.bin/babel --out-dir dist src",
-    "start": "./node_modules/.bin/vertx run dist/index.js -conf conf/config.json"
+    "start": "./node_modules/.bin/vertx run dist/index.js -conf conf/config.json -Dvertx.options.maxEventLoopExecuteTime 1000000000"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",

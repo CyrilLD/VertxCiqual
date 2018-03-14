@@ -23,7 +23,7 @@ module.exports = (line) => {
       if (char === ',') { // value separator, add the value to the data array, then reset and continue
         if (/^\d+[\.,]?\d+$/.test(value)) {
           data.push(parseFloat(value.replace(',', '.')));
-        } else {
+        } else if (value !== null && value !== undefined){
           data.push(value.trim());
         }
         value = null;
