@@ -2,7 +2,7 @@
  * CSV parser
  * Parses a buffer containing a csv file into an array of values
  * First line is used as fields identifiers
- * @module src/persers/parseCsv
+ * @module src/parsers/parseCsv
  * @author Cyril LD
  */
 import RecordParser from "vertx-js/record_parser";
@@ -37,7 +37,7 @@ const cleanHeader = datas => datas.map(prop =>
     .replace(/[éèêë]/g, 'e')
     .toLowerCase()
 )
- 
+
 
 /**
 * Parses a buffer containing a csv file into an array of values
@@ -48,7 +48,7 @@ module.exports = (buffer) => {
   let header = null;
   const data = [];
   let i = 0;
-  
+
   const parser = RecordParser.newDelimited("\n", line => {
     // parse header line
     if (i === 0) {

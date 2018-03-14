@@ -2,7 +2,7 @@
  * Naive CSV line parser
  * It just loops through all chars of the line, separating values with provided separator or comma.
  * String values could be surrounded by double quotes
- * @module src/persers/parseCsvLine
+ * @module src/parsers/parseCsvLine
  * @author Cyril LD
  */
 module.exports = (line) => {

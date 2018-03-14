@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -7,45 +7,55 @@
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
   <script>
-    $( function() {
-      function log( message ) {
-        $( "<div>" ).text( message ).prependTo( "#log" );
-        $( "#log" ).scrollTop( 0 );
-      }
+  $(function() {
+    function displayResult(result) {
+      $("<div>")
+        .html(
+          result.alim_nom_fr +
+            "<br><br>Énergie pour 100 grammes : <b>" +
+            result.kcal +
+            " kcal</b>"
+        )
+        .prependTo("#foodResult");
+    }
 
-      $( "#foodsSearch" ).autocomplete({
-        source: function( request, response ) {
-          $.ajax( {
-            url: "foods",
-            data: 'q=' + request.term,
-            dataType: 'json',
-            success: function( data ) {
-              response( data );
-            }
-          } );
-        },
-        minLength: 2,
-        select: function( event, ui ) {
-          log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+    // When selecting a food in the autocomplete selectlist, makes an ajax request to
+    // the API to retrieve the result
+    function selectFood(foodId) {
+      $("#foodResult").empty();
+      $.ajax({
+        url: "food/" + foodId + "/energy_kcal",
+        dataType: "json",
+        success: function(data) {
+          displayResult(data);
         }
-      } );
-    } );
+      });
+    }
+
+    $("#foodsSearch").autocomplete({
+      source: function(request, response) {
+        var startParam = $("#startWith").prop("checked") ? "1" : 0;
+        $.ajax({
+          url: "foods",
+          data: "q=" + request.term + "&startWith=" + startParam,
+          dataType: "json",
+          success: function(data) {
+            response(data);
+          }
+        });
+      },
+      minLength: 2,
+      select: function(event, ui) {
+        selectFood(ui.item.id);
+      }
+    });
+  });
   </script>
 </head>
-<body>
-  <input id="foodsSearch">
-
-  <div class="ui-widget" style="margin-top:2em; font-family:Arial">
-    Result:
-    <div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div>
-  </div>
-
-  <script>
-
-
-  $( '.suggest' ).keyup( function() {
-     getResults( $( this ).val() );
-  } );
-  </script>
+<body style="font-family:Arial">
+  <input type="checkbox" id="startWith" name="startWith" />Commence par<br>
+  <input id="foodsSearch" style="font-size: 12px; width: 300px;">
+  <br /> <br />
+  <div id="foodResult" style="height: 200px; width: 400px; overflow: auto;"></div>
 </body>
 </html>
